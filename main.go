@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -444,23 +443,8 @@ func cmdNew(c *cli.Context) error {
 		title = c.Args().First()
 		file = time.Now().Format("2006-01-02-15-04-05-") + escape(title) + ".md"
 	} else {
-		fmt.Print("Title: ")
-		scanner := bufio.NewScanner(os.Stdin)
-		if !scanner.Scan() {
-			return errors.New("canceled")
-		}
-		if scanner.Err() != nil {
-			return scanner.Err()
-		}
-		title = scanner.Text()
-		if title == "" {
-			title = time.Now().Format("2006-01-02-15-04-05")
-			file = title + ".md"
-			
-		} else {
-			file = time.Now().Format("2006-01-02-15-04-05-") + escape(title) + ".md"
-		}
-
+		title = time.Now().Format("2006-01-02-15-04-05")
+		file = title + ".md"
 	}
 	file = filepath.Join(cfg.MemoDir, file)
 	t := template.Must(template.New("memo").Parse(templateMemoContent))
