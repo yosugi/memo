@@ -82,6 +82,7 @@ type config struct {
 	PluginsDir       string `toml:"pluginsdir"`
 	TemplateDirFile  string `toml:"templatedirfile"`
 	TemplateBodyFile string `toml:"templatebodyfile"`
+	IsShowFirstLine  bool   `toml:"isshowfirstline"`
 }
 
 type entry struct {
@@ -491,6 +492,17 @@ func cmdEdit(c *cli.Context) error {
 			return err
 		}
 		files = filterMarkdown(files)
+		// タイトル読み込み string 作る
+		if cfg.IsShowFirstLine {
+			var newFiles []string
+			for _, file := range files {
+				var line = firstline(filepath.Join(cfg.MemoDir, file))
+				var newFile = strings.Join([]string{file, ": ", line}, "")
+				newFiles = append(newFiles, newFile)
+			}
+			files = newFiles
+		}
+
 		var buf bytes.Buffer
 		err = cfg.runfilter(cfg.SelectCmd, strings.NewReader(strings.Join(files, "\n")), &buf)
 		if err != nil {
@@ -505,6 +517,17 @@ func cmdEdit(c *cli.Context) error {
 			return errors.New("No files selected")
 		}
 		files = strings.Split(strings.TrimSpace(buf.String()), "\n")
+
+		if cfg.IsShowFirstLine {
+			var newFiles []string
+			for _, file := range files {
+				var splited []string = strings.Split(file, ": ")
+				var newFile = splited[0]
+				newFiles = append(newFiles, newFile)
+			}
+			files = newFiles
+		}
+
 		for i, file := range files {
 			files[i] = filepath.Join(cfg.MemoDir, file)
 		}
