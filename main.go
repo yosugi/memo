@@ -442,9 +442,9 @@ func cmdNew(c *cli.Context) error {
 	var file string
 	if c.Args().Present() {
 		title = c.Args().First()
-		file = time.Now().Format("2006-01-02-15-04-05-") + escape(title) + ".md"
+		file = time.Now().Format("2006-01-02-150405-") + escape(title) + ".md"
 	} else {
-		title = time.Now().Format("2006-01-02-15-04-05")
+		title = time.Now().Format("2006-01-02-150405")
 		file = title + ".md"
 	}
 	file = filepath.Join(cfg.MemoDir, file)
