@@ -513,6 +513,8 @@ func cmdEdit(c *cli.Context) error {
 
 			}
 		}
+
+        // create showLines
         var showLines []string
         for showLine, _:= range fileHash {
             showLines = append(showLines, showLine)
@@ -533,9 +535,8 @@ func cmdEdit(c *cli.Context) error {
 			return errors.New("No files selected")
 		}
 		selectedLines := strings.Split(strings.TrimSpace(buf.String()), "\n")
-        fmt.Printf("%+v\n", selectedLines)
-        fmt.Printf("%+v\n", fileHash)
 
+        // get selectedFiles
         for _, selectedLine := range selectedLines {
             selectedFile := fileHash[selectedLine];
 			selectedFiles = append(selectedFiles, filepath.Join(cfg.MemoDir, selectedFile))
