@@ -481,8 +481,8 @@ func cmdEdit(c *cli.Context) error {
 	var selectedFiles []string
 	if c.Args().Present() {
 		selectedFiles = append(selectedFiles, filepath.Join(cfg.MemoDir, c.Args().First()))
-    } else {
-        var files []string
+	} else {
+		var files []string
 		f, err := os.Open(cfg.MemoDir)
 		if err != nil {
 			return err
@@ -506,20 +506,20 @@ func cmdEdit(c *cli.Context) error {
 				col = column
 			}
 			for _, file := range files {
-                title := firstline(filepath.Join(cfg.MemoDir, file))
+				title := firstline(filepath.Join(cfg.MemoDir, file))
 				showFile := runewidth.FillRight(runewidth.Truncate(file, col, "..."), col)
-                showLine := strings.Join([]string{showFile, ": ", title}, "")
-                fileHash[showLine] = file
+				showLine := strings.Join([]string{showFile, ": ", title}, "")
+				fileHash[showLine] = file
 
 			}
 		}
 
-        // create showLines
-        var showLines []string
-        for showLine, _:= range fileHash {
-            showLines = append(showLines, showLine)
-        }
-        sort.Sort(sort.Reverse(sort.StringSlice(showLines)))
+		// create showLines
+		var showLines []string
+		for showLine, _ := range fileHash {
+			showLines = append(showLines, showLine)
+		}
+		sort.Sort(sort.Reverse(sort.StringSlice(showLines)))
 
 		var buf bytes.Buffer
 		err = cfg.runfilter(cfg.SelectCmd, strings.NewReader(strings.Join(showLines, "\n")), &buf)
@@ -536,9 +536,9 @@ func cmdEdit(c *cli.Context) error {
 		}
 		selectedLines := strings.Split(strings.TrimSpace(buf.String()), "\n")
 
-        // get selectedFiles
-        for _, selectedLine := range selectedLines {
-            selectedFile := fileHash[selectedLine];
+		// get selectedFiles
+		for _, selectedLine := range selectedLines {
+			selectedFile := fileHash[selectedLine]
 			selectedFiles = append(selectedFiles, filepath.Join(cfg.MemoDir, selectedFile))
 		}
 	}
