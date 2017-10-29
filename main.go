@@ -478,10 +478,11 @@ func cmdEdit(c *cli.Context) error {
 		return err
 	}
 
-	var files []string
+	var selectedFiles []string
 	if c.Args().Present() {
-		files = append(files, filepath.Join(cfg.MemoDir, c.Args().First()))
-	} else {
+		selectedFiles = append(selectedFiles, filepath.Join(cfg.MemoDir, c.Args().First()))
+    } else {
+        var files []string
 		f, err := os.Open(cfg.MemoDir)
 		if err != nil {
 			return err
@@ -492,19 +493,34 @@ func cmdEdit(c *cli.Context) error {
 			return err
 		}
 		files = filterMarkdown(files)
-		// タイトル読み込み string 作る
-		if cfg.IsShowFirstLine {
-			var newFiles []string
+
+		// 一行目を読み込み string 作る
+		fileHash := map[string]string{}
+		if !cfg.IsShowFirstLine {
 			for _, file := range files {
-				var line = firstline(filepath.Join(cfg.MemoDir, file))
-				var newFile = strings.Join([]string{file, ": ", line}, "")
-				newFiles = append(newFiles, newFile)
+				fileHash[file] = file
 			}
-			files = newFiles
+		} else {
+			col := cfg.Column
+			if col == 0 {
+				col = column
+			}
+			for _, file := range files {
+                title := firstline(filepath.Join(cfg.MemoDir, file))
+				showFile := runewidth.FillRight(runewidth.Truncate(file, col, "..."), col)
+                showLine := strings.Join([]string{showFile, ": ", title}, "")
+                fileHash[showLine] = file
+
+			}
 		}
+        var showLines []string
+        for showLine, _:= range fileHash {
+            showLines = append(showLines, showLine)
+        }
+        sort.Sort(sort.Reverse(sort.StringSlice(showLines)))
 
 		var buf bytes.Buffer
-		err = cfg.runfilter(cfg.SelectCmd, strings.NewReader(strings.Join(files, "\n")), &buf)
+		err = cfg.runfilter(cfg.SelectCmd, strings.NewReader(strings.Join(showLines, "\n")), &buf)
 		if err != nil {
 			// TODO:
 			// Some select tools return non-zero, and some return zero.
@@ -516,23 +532,17 @@ func cmdEdit(c *cli.Context) error {
 		if buf.Len() == 0 {
 			return errors.New("No files selected")
 		}
-		files = strings.Split(strings.TrimSpace(buf.String()), "\n")
+		selectedLines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+        fmt.Printf("%+v\n", selectedLines)
+        fmt.Printf("%+v\n", fileHash)
 
-		if cfg.IsShowFirstLine {
-			var newFiles []string
-			for _, file := range files {
-				var splited []string = strings.Split(file, ": ")
-				var newFile = splited[0]
-				newFiles = append(newFiles, newFile)
-			}
-			files = newFiles
-		}
-
-		for i, file := range files {
-			files[i] = filepath.Join(cfg.MemoDir, file)
+        for _, selectedLine := range selectedLines {
+            selectedFile := fileHash[selectedLine];
+			selectedFiles = append(selectedFiles, filepath.Join(cfg.MemoDir, selectedFile))
 		}
 	}
-	return cfg.runcmd(cfg.Editor, "", files...)
+	return cfg.runcmd(cfg.Editor, "", selectedFiles...)
+
 }
 
 func cmdDelete(c *cli.Context) error {
